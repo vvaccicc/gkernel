@@ -1,2 +1,223 @@
-# gkernel
-Graph classification based on enumeration of subgraphs
+This repository contains beta version of the graphlet kernel code and 
+supplementary information for:
+
+> Vacic V, Iakoucheva LM, Lonardi S, Radivojac P. (2010) "Graphlet 
+kernels for prediction of functional residues in protein structures." 
+*Journal of Computational Biology*. 17(1):55-72. 
+[PMID:20078397](https://pubmed.ncbi.nlm.nih.gov/20078397/).
+
+
+We introduced a novel graph-based kernel method for annotating
+functional residues in protein structures. A structure is first modeled
+as a protein contact graph, where nodes correspond to residues and
+edges connect spatially neighboring residues. Each vertex in the graph
+is then represented as a vector of counts of labeled non-isomorphic
+subgraphs (graphlets), centered on the vertex of interest. A similarity
+measure between two vertices is expressed as the inner product of their
+respective count vectors and is used in a supervised learning framework
+to classify protein residues. The key benefit of the graphlet
+representation is its ability to capture neighborhood similarities in
+protein structures via enumerating the patterns of local connectivity
+in the corresponding labeled graphs.
+
+A detailed description of the method and discussion of parameters can be 
+found in (Vacic *et al.*, 2010).  
+
+
+## Contents:
+
+* src - 
+* supplement - 
+
+
+
+Graphlet Kernel version 1.1
+
+Created by: Vladimir Vacic
+Computer Science and Engineering
+University of California, Riverside
+May 20, 2008
+
+Modified by: Jose Lugo-Martinez
+School of Informatics and Computing 
+Indiana University, Bloomington
+July 6, 2010
+
+
+### Compilation
+
+To compile the graphlet kernel, type "make" on the command prompt. 
+Program files "pcg_parser" and "pcg_kernel" will be generated. 
+
+NOTE: Global variable PIVOT in gkernel.h controls inclusion of the pivot
+vertex in the counts of graphlets. If PIVOT is set to 0 then only non-pivot
+label mismatches are counted. If PIVOT is set to 1 then label mismatches
+will also include the pivot node.
+
+
+### Program options
+
+```
+Usage: pcg_parser [options] PDB_FILE
+Options:
+
+  -h           Displays this message.
+
+  -c CHAIN     PDB chain.
+               Defaults to the first chain found in the PDB file.
+  -m METHOD    Method used for determining interacting residues.
+               Can be C_ALPHA, C_BETA, ALL_ATOMS, ALL_VDW_RADIUS.
+               Defaults to C_ALPHA.
+  -d DISTANCE  Threshold distance in Angstroms.
+               Defaults to 6A.
+
+  -r RESIDUE   Only the subgraph centered at this residue.
+               Residues should be specified by their residue sequence
+               number and an insertion code, if one exists (resSeq and
+               iCode, columns 23-26 and 27 in the ATOM/HETATM lines).
+  -s RADIUS    Includes only the residues with C alphas within the 
+               sphere of the given RADIUS, centered at the C alpha
+               of the -r residue.
+  or           
+  -p HOPS      Includes only the residues less than HOPS hops away
+               from the -r residue.
+
+  -E or -C     Output file format, edge list or compact.
+               Defaults to edge list.
+  -o OUTFILE   Output file for the results.
+               Defaults to terminal.
+```
+
+```
+Usage: pcg_kernel -p FILE -n FILE -a PATH -[k|m|s] OUTPUT [...]
+Options:
+
+  -h         Displays this message.
+
+  -p FILE    List of positive structural motifs.
+  -n FILE    List of negative structural motifs.
+  -a PATH    Path to subgraph files.
+
+  -r REDUCT  Alphabet reduction scheme. Can be NO_REDUCTION,
+             UNLABELED, BLOSUM_2, BLOSUM_3, BLOSUM_4, BLOSUM_5,
+             BLOSUM_6, BLOSUM_8, BLOSUM_10 or BLOSUM_15.
+             Defaults to NO_REDUCTION.
+
+  -N         Normalize the kernel matrix.
+             Defaults to false.
+
+  -k KERNEL  Output file for the binary kernel matrix.
+   or
+  -m SPARSE  Output file for the sparse attribute matrix (Matlab).
+   or
+  -s SPARSE  Output file for the sparse attribute matrix (SVML).
+             Defaults to binary kernel matrix.
+
+  -l LABELS  Output file for the example labels.
+
+  -v         Verbose (prints progress messages).
+```
+
+
+### Example 
+
+The data subdirectory contains a single PDB file (3LCK.pdb), and two
+files with positives (functional) and negative (not-functional) 
+residues, LYS_3LCK.positives and LYS_3LCK.negatives. As an illustration,
+all lysines inside 3LCK were arbitrarily split into positives and 
+negatives.
+
+PDB files can be downloaded from the Protein Data Bank 
+(http://www.pdb.org).
+
+The "positives" and "negatives" files are tab-separated, with three
+fields, PDB_CODE, CHAIN and RESIDUE.  
+
+Preparing a kernel matrix from PDB files is a two step process:
+
+(1) `pcg_parser` is used to parse PDB files into protein contact graphs.
+The user can specify the connection method (C_ALPHA, B_BETA, ALL_ATOMS,
+etc.), distance thresholds, etc. See (Vacic *et al.*, 2010) for details.
+
+(2) `pcg_kernel` is used to generate the graphlet count representation
+based on the graph files. There are several output options, out of which
+SVM^Light format is probably the easiest to use, because it can be 
+readily read by SVM^Light (see http://svmlight.joachims.org). In a 
+nutshell, this is a space-separated file with the first field equal to 1
+(for positives) or -1 (for negatives), and all other non-zero entries 
+are feature_key:feature_value pairs.  
+
+A sample `example.sh` shell script is provided as an illustrative example of
+the process. 
+
+
+### Comment regarding large datasets
+
+Using the SVM^Light format directly on very large datasets is not
+efficient, because the dot-product between feature vectors has to be
+unnecessarily recomputed over and over again. There is an option to
+precompute the kernel matrix and save it as a binary file, however,
+using it with SVM^Light is slightly more complicated, because the
+reader for this file format has to be custom coded and according to the
+SVM^Light copyright agreement we are not allowed to distribute modified
+SVM^Light code. 
+
+If efficiency is an issue and you decide to tweak SVM^Light, in
+`svm_learn_main.c', function 'main()` you may add something in the
+likes of:
+
+```
+CFLOAT *distmat;
+FILE *f;
+unsigned int numgraphs, numcells;
+
+if (kernel_parm.kernel_type == 4) {
+    f = fopen(kernel_parm.custom, "rb");
+
+    fread(&numgraphs, sizeof(unsigned int), 1, f);
+    numcells = (numgraphs+1) * numgraphs / 2;
+
+    distmat = (CFLOAT *) my_malloc(numcells * sizeof(CFLOAT));
+    fread(distmat, sizeof(CFLOAT), numcells, f);
+
+    fclose(f);
+
+    kernel_parm.distmat = distmat;
+}
+```
+
+This will load the pre-computed dot-product matrix.
+
+And in `svm_common.c`, function 
+`CFLOAT single_kernel(KERNEL_PARM *kernel_parm,  SVECTOR *a, SVECTOR *b)`:
+
+```
+case 4:
+    i = atoi(a->userdefined);
+    j = atoi(b->userdefined);
+
+    if (i >= j)
+        return kernel_parm->distmat[(i+1)*i/2 + j];
+    else
+        return kernel_parm->distmat[(j+1)*j/2 + i];
+```
+
+For every 2 vectors, this will read their pre-computed dot-product from
+the matrix.
+
+
+### Summary of changes
+
+1.1     Added pivot as a paramater of make_key() function, which optionally
+        includes pivot in the graphlets labeling representation. 
+
+        Added additional graphlets counts for case 0123 to include all 
+        paths that lead to this case.
+
+ 	Fixed bugs in counting orbits 12 and 13 and a small typo in case
+        0112.
+
+	Fixed a bug in label generation in make_key() function for cases
+        8 and 15.
+
+1.01    Added basic index checking into the graph reading function.
