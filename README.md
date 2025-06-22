@@ -26,33 +26,66 @@ found in (Vacic *et al.*, 2010).
 
 ## Contents:
 
-* src - 
-* supplement - 
+* supplement - Supplementary information for (Vacic *et al.*, 2010)
+* src - graphlet kernel source code
 
 
+## Supplementary information
 
-Graphlet Kernel version 1.1
+[Supplementary Table S1](Table_S1_Phos_PDB.xls): A nonredundant subset
+of phosphorylated sites mined from PDB and results of the search for
+the structures of proteins that can be found both in the phosphorylated
+and the unphosphorylated states.
 
-Created by: Vladimir Vacic
-Computer Science and Engineering
-University of California, Riverside
-May 20, 2008
+[Supplementary Table S2](Table_S2.pdf): Summary of the set of sequences
+with experimentally annotated phosphorylation sites. NR: non-redundant,
+here defined as having less than 40% sequence identity in the 25
+residue-long fragment centered at S, T or Y.
 
-Modified by: Jose Lugo-Martinez
-School of Informatics and Computing 
-Indiana University, Bloomington
-July 6, 2010
+[Supplementary Table S3](Table_S3.pdf): Performance of method/parameter
+combinations on the CSA dataset. Within each group of predictors, the
+one with the highest AUC was awarded a point. In the case of ties, the
+point would be evenly split between the methods which performed equally
+well.
+
+[Supplementary Table S4](Table_S4.pdf): Performance of method/parameter
+combinations on the PHOS dataset. Within each group of predictors, the
+one with the highest AUC was awarded a point.
+
+[Supplementary Table S5](Table_S5.pdf): Jaccard coefficients between
+sets of edges in residue interaction networks obtained using different
+methods. Jaccard similarity coefficient for two sets A and B is defined
+as J(A,B) = |A \ B|/|A [ B|. Values over 70% are in bold face and
+marked with an asterisk.
+
+[Supplementary Figure S1](Figure_S1.pdf): Schematic representation of
+the BLOSUM50 matrix-based amino acid alphabet reduction.
+
+[Supplementary Figures S2-S24](Figures_S2_S24.pdf): Performance of all
+predictors on the CSA and PHOS datasets. 
+
+
+## Code:
+
+Graphlet Kernel v1.1
+
+Created by: Vladimir Vacic (Computer Science and Engineering, University
+of California, Riverside) May 20, 2008
+
+Modified by: Jose Lugo-Martinez (School of Informatics and Computing,
+Indiana University, Bloomington) July 6, 2010
 
 
 ### Compilation
 
-To compile the graphlet kernel, type "make" on the command prompt. 
-Program files "pcg_parser" and "pcg_kernel" will be generated. 
+To compile the graphlet kernel code, go to the `src` directory and type
+`make` on the command prompt. This will generate program files
+`pcg_parser` and `pcg_kernel`. 
 
-NOTE: Global variable PIVOT in gkernel.h controls inclusion of the pivot
-vertex in the counts of graphlets. If PIVOT is set to 0 then only non-pivot
-label mismatches are counted. If PIVOT is set to 1 then label mismatches
-will also include the pivot node.
+NOTE: Global variable PIVOT in `gkernel.h` controls inclusion of the pivot
+vertex in the counts of graphlets. If PIVOT is set to 0 then only
+non-pivot label mismatches are counted. If PIVOT is set to 1 then label
+mismatches will also include the pivot node.
 
 
 ### Program options
@@ -119,16 +152,15 @@ Options:
 ```
 
 
-### Example 
+### Usage example 
 
 The data subdirectory contains a single PDB file (3LCK.pdb), and two
-files with positives (functional) and negative (not-functional) 
-residues, LYS_3LCK.positives and LYS_3LCK.negatives. As an illustration,
-all lysines inside 3LCK were arbitrarily split into positives and 
-negatives.
+files with positives (functional) and negative (not-functional) residues,
+LYS_3LCK.positives and LYS_3LCK.negatives. As an illustration, all 
+lysines inside 3LCK were arbitrarily split into positives and negatives.
 
-PDB files can be downloaded from the Protein Data Bank 
-(http://www.pdb.org).
+PDB files can be downloaded from the Protein Data Bank
+(https://www.rcsb.org).
 
 The "positives" and "negatives" files are tab-separated, with three
 fields, PDB_CODE, CHAIN and RESIDUE.  
@@ -137,18 +169,19 @@ Preparing a kernel matrix from PDB files is a two step process:
 
 (1) `pcg_parser` is used to parse PDB files into protein contact graphs.
 The user can specify the connection method (C_ALPHA, B_BETA, ALL_ATOMS,
-etc.), distance thresholds, etc. See (Vacic *et al.*, 2010) for details.
+etc.), distance thresholds, etc. See (Vacic *et al.*, 2010) for
+details.
 
 (2) `pcg_kernel` is used to generate the graphlet count representation
-based on the graph files. There are several output options, out of which
-SVM^Light format is probably the easiest to use, because it can be 
-readily read by SVM^Light (see http://svmlight.joachims.org). In a 
-nutshell, this is a space-separated file with the first field equal to 1
-(for positives) or -1 (for negatives), and all other non-zero entries 
+based on the graph files. There are several output options, out of
+which SVM^Light format is probably the easiest to use, because it can
+be readily read by SVM^Light (see http://svmlight.joachims.org). In a
+nutshell, this is a space-separated file with the first field equal to
+1(for positives) or -1 (for negatives), and all other non-zero entries
 are feature_key:feature_value pairs.  
 
-A sample `example.sh` shell script is provided as an illustrative example of
-the process. 
+A sample `example.sh` shell script is provided as an illustrative
+example of the process. 
 
 
 ### Comment regarding large datasets
@@ -163,7 +196,7 @@ SVM^Light copyright agreement we are not allowed to distribute modified
 SVM^Light code. 
 
 If efficiency is an issue and you decide to tweak SVM^Light, in
-`svm_learn_main.c', function 'main()` you may add something in the
+`svm_learn_main.c`, function `main()` you may add something in the
 likes of:
 
 ```
@@ -208,16 +241,17 @@ the matrix.
 
 ### Summary of changes
 
-1.1     Added pivot as a paramater of make_key() function, which optionally
-        includes pivot in the graphlets labeling representation. 
+1.1 (JLM) 
 
-        Added additional graphlets counts for case 0123 to include all 
-        paths that lead to this case.
+* Added pivot as a paramater of make_key() function, which optionally includes pivot in the graphlets labeling representation. 
+* Added additional graphlets counts for case 0123 to include all paths that lead to this case.
+* Fixed bugs in counting orbits 12 and 13 and a small typo in case 0112.
+* Fixed a bug in label generation in make_key() function for cases 8 and 15.
 
- 	Fixed bugs in counting orbits 12 and 13 and a small typo in case
-        0112.
+1.01 (VV)
 
-	Fixed a bug in label generation in make_key() function for cases
-        8 and 15.
+* Added basic index checking into the graph reading function.
 
-1.01    Added basic index checking into the graph reading function.
+1.00 (VV)
+
+* Initial release
