@@ -72,7 +72,7 @@ Performance of all predictors on the CSA and PHOS datasets.
 
 To compile the graphlet kernel code, go to the `src` directory and type
 `make` on the command prompt. This will generate program files
-`pcg_parser` and `pcg_kernel`. 
+`parse_pdb` and `make_kernel`. 
 
 NOTE: Global variable PIVOT in `gkernel.h` controls inclusion of the pivot
 vertex in the counts of graphlets. If PIVOT is set to 0 then only
@@ -161,12 +161,12 @@ fields, PDB_CODE, CHAIN and RESIDUE.
 
 Preparing a kernel matrix from PDB files is a two step process:
 
-(1) `pcg_parser` is used to parse PDB files into protein contact graphs.
+(1) `parse_pdb` is used to parse PDB files into protein contact graphs.
 The user can specify the connection method (C_ALPHA, B_BETA, ALL_ATOMS,
 etc.), distance thresholds, etc. See (Vacic *et al.*, 2010) for
 details.
 
-(2) `pcg_kernel` is used to generate the graphlet count representation
+(2) `make_kernel` is used to generate the graphlet count representation
 based on the graph files. There are several output options, out of
 which SVM^Light format is probably the easiest to use, because it can
 be readily read by SVM^Light (see http://svmlight.joachims.org). In a
