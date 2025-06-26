@@ -83,7 +83,7 @@ mismatches will also include the pivot node.
 ### Program options
 
 ```
-Usage: pcg_parser [options] PDB_FILE
+Usage: parse_pdb [options] PDB_FILE
 Options:
 
   -h           Displays this message.
@@ -103,24 +103,20 @@ Options:
   -s RADIUS    Includes only the residues with C alphas within the 
                sphere of the given RADIUS, centered at the C alpha
                of the -r residue.
-  or           
-  -p HOPS      Includes only the residues less than HOPS hops away
-               from the -r residue.
 
   -E or -C     Output file format, edge list or compact.
                Defaults to edge list.
   -o OUTFILE   Output file for the results.
-               Defaults to terminal.
 ```
 
 ```
-Usage: pcg_kernel -p FILE -n FILE -a PATH -[k|m|s] OUTPUT [...]
+Usage: make_kernel -p FILE -n FILE -a PATH -[k|m|s] OUTPUT [...]
 Options:
 
   -h         Displays this message.
 
-  -p FILE    List of positive structural motifs.
-  -n FILE    List of negative structural motifs.
+  -p FILE    List of positives.
+  -n FILE    List of negatives.
   -a PATH    Path to subgraph files.
 
   -r REDUCT  Alphabet reduction scheme. Can be NO_REDUCTION,
@@ -133,14 +129,20 @@ Options:
 
   -k KERNEL  Output file for the binary kernel matrix.
    or
-  -m SPARSE  Output file for the sparse attribute matrix (Matlab).
+  -m MATLAB  Output file for the sparse attribute matrix (Matlab).
    or
-  -s SPARSE  Output file for the sparse attribute matrix (SVML).
+  -s SVML    Output file for the sparse attribute matrix (SVM^Light).
+   or
+  -t TEXT    Output file for the plain text kernel matrix.
              Defaults to binary kernel matrix.
 
   -l LABELS  Output file for the example labels.
 
-  -v         Verbose (prints progress messages).
+  -V         Verbose (prints progress messages).
+             Defaults to false.
+
+  -D         Debug (prints debug messages).
+             Defaults to false.
 ```
 
 
